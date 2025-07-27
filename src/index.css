@@ -2,39 +2,64 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+/* Sistema de Design Brasileiro para Agentes Afiliados IA
+Paleta inspirada nas cores do Brasil com toques tecnológicos
 */
 
 @layer base {
   :root {
+    /* Background principal - branco puro */
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 210 20% 20%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    /* Cards com sutil tonalidade brasileira */
+    --card: 0 0% 99%;
+    --card-foreground: 210 20% 20%;
 
+    /* Popover */
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 210 20% 20%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Verde brasileiro moderno como primary */
+    --primary: 140 65% 45%;
+    --primary-foreground: 0 0% 100%;
+    --primary-glow: 140 60% 55%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Dourado brasileiro elegante */
+    --secondary: 45 90% 55%;
+    --secondary-foreground: 210 20% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Cinza suave */
+    --muted: 210 10% 96%;
+    --muted-foreground: 210 15% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Azul tecnológico como accent */
+    --accent: 210 80% 55%;
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Destructive */
+    --destructive: 0 80% 60%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    /* Bordas suaves */
+    --border: 210 10% 90%;
+    --input: 210 10% 94%;
+    --ring: 140 65% 45%;
+
+    /* Gradientes brasileiros */
+    --gradient-primary: linear-gradient(135deg, hsl(140 65% 45%), hsl(140 60% 55%));
+    --gradient-secondary: linear-gradient(135deg, hsl(45 90% 55%), hsl(50 85% 60%));
+    --gradient-accent: linear-gradient(135deg, hsl(210 80% 55%), hsl(220 75% 60%));
+    --gradient-bg: linear-gradient(180deg, hsl(0 0% 100%), hsl(140 20% 98%));
+
+    /* Sombras elegantes */
+    --shadow-elegant: 0 10px 30px -10px hsl(140 65% 45% / 0.2);
+    --shadow-glow: 0 0 40px hsl(140 60% 55% / 0.3);
+    --shadow-card: 0 4px 20px -4px hsl(210 20% 20% / 0.1);
+
+    /* Animações suaves */
+    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
     --radius: 0.5rem;
 
