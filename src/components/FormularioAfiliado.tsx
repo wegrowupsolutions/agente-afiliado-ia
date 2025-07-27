@@ -8,6 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { FileUpload } from './FileUpload';
 import { PreviewCadastro } from './PreviewCadastro';
@@ -21,7 +22,9 @@ import {
   ShoppingCart,
   Sparkles,
   CheckCircle,
-  Upload
+  Upload,
+  PartyPopper,
+  Trophy
 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -43,6 +46,7 @@ type FormData = z.infer<typeof formSchema>;
 export const FormularioAfiliado = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedData, setSubmittedData] = useState<any>(null);
   const [uploadedFiles, setUploadedFiles] = useState({
     videosDepoimento: [] as string[],
@@ -102,7 +106,9 @@ export const FormularioAfiliado = () => {
       }
 
       setSubmittedData({ ...data, ...uploadedFiles, id: insertedData.id });
-      setSubmitSuccess(true);
+      
+      // Mostrar pop-up de sucesso primeiro
+      setShowSuccessModal(true);
       
       toast({
         title: "✅ Cadastro realizado com sucesso!",
@@ -391,6 +397,62 @@ export const FormularioAfiliado = () => {
             </Form>
           </CardContent>
         </Card>
+
+        {/* Pop-up de Sucesso */}
+        <Dialog open={showSuccessModal} onOpenChange={setShowSuccessModal}>
+          <DialogContent className="max-w-md text-center">
+            <DialogHeader>
+              <div className="flex justify-center mb-4">
+                <div className="p-6 bg-gradient-to-br from-green-500 to-green-600 rounded-full animate-bounce-in">
+                  <Trophy className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              <DialogTitle className="text-2xl font-bold text-green-700 mb-2">
+                🎉 Parabéns!
+              </DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="flex justify-center">
+                <PartyPopper className="w-8 h-8 text-primary animate-bounce" />
+              </div>
+              <p className="text-lg font-semibold text-foreground">
+                Cadastro realizado com sucesso!
+              </p>
+              <p className="text-muted-foreground">
+                Todos os seus dados e arquivos foram salvos com segurança no Supabase. 
+                Seu agente afiliado está agora cadastrado na nossa plataforma!
+              </p>
+              <div className="pt-4 space-y-3">
+                <Button 
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    setSubmitSuccess(true);
+                  }}
+                  className="w-full bg-gradient-to-r from-primary to-primary-glow hover:shadow-lg"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Ver Resumo do Cadastro
+                </Button>
+                <Button 
+                  variant="outline" 
+                  onClick={() => {
+                    setShowSuccessModal(false);
+                    form.reset();
+                    setUploadedFiles({
+                      videosDepoimento: [],
+                      imagensProduto: [],
+                      imagensProvaSocial: [],
+                      documentosComplementares: []
+                    });
+                  }}
+                  className="w-full"
+                >
+                  Fazer Novo Cadastro
+                </Button>
+              </div>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
