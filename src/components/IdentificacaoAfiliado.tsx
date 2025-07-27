@@ -179,7 +179,7 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
             </CardTitle>
             <p className="text-muted-foreground">
               {modo === 'novo' 
-                ? 'Crie seu perfil de afiliado para começar' 
+                ? 'Faça seu cadastro para começar' 
                 : 'Entre com seu email e senha'
               }
             </p>
