@@ -14,10 +14,12 @@ const identificacaoSchema = z.object({
   email: z.string().email('Insira um email válido'),
   nomeCompleto: z.string().min(2, 'Nome deve ter pelo menos 2 caracteres'),
   telefone: z.string().min(10, 'Telefone deve ter pelo menos 10 dígitos'),
+  senha: z.string().min(6, 'Senha deve ter pelo menos 6 caracteres'),
 });
 
 const loginSchema = z.object({
-  codigoAfiliado: z.string().min(8, 'Código deve ter 8 caracteres').max(8, 'Código deve ter 8 caracteres'),
+  email: z.string().email('Insira um email válido'),
+  senha: z.string().min(1, 'Senha é obrigatória'),
 });
 
 type IdentificacaoData = z.infer<typeof identificacaoSchema>;
