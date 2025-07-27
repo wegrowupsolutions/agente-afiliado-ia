@@ -14,8 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
+      afiliados_perfis: {
+        Row: {
+          codigo_afiliado: string
+          created_at: string
+          data_cadastro: string
+          email: string
+          id: string
+          nome_completo: string
+          status: Database["public"]["Enums"]["afiliado_status"]
+          telefone: string | null
+          total_cadastros: number | null
+          ultimo_acesso: string | null
+          updated_at: string
+        }
+        Insert: {
+          codigo_afiliado: string
+          created_at?: string
+          data_cadastro?: string
+          email: string
+          id?: string
+          nome_completo: string
+          status?: Database["public"]["Enums"]["afiliado_status"]
+          telefone?: string | null
+          total_cadastros?: number | null
+          ultimo_acesso?: string | null
+          updated_at?: string
+        }
+        Update: {
+          codigo_afiliado?: string
+          created_at?: string
+          data_cadastro?: string
+          email?: string
+          id?: string
+          nome_completo?: string
+          status?: Database["public"]["Enums"]["afiliado_status"]
+          telefone?: string | null
+          total_cadastros?: number | null
+          ultimo_acesso?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       cadastros_afiliados: {
         Row: {
+          afiliado_id: string | null
           checkout_01: string
           checkout_02: string | null
           checkout_03: string | null
@@ -36,6 +79,7 @@ export type Database = {
           whatsapp: string
         }
         Insert: {
+          afiliado_id?: string | null
           checkout_01: string
           checkout_02?: string | null
           checkout_03?: string | null
@@ -56,6 +100,7 @@ export type Database = {
           whatsapp: string
         }
         Update: {
+          afiliado_id?: string | null
           checkout_01?: string
           checkout_02?: string | null
           checkout_03?: string | null
@@ -75,17 +120,28 @@ export type Database = {
           videos_depoimento?: string[] | null
           whatsapp?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "cadastros_afiliados_afiliado_id_fkey"
+            columns: ["afiliado_id"]
+            isOneToOne: false
+            referencedRelation: "afiliados_perfis"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      gerar_codigo_afiliado: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
     }
     Enums: {
-      [_ in never]: never
+      afiliado_status: "ativo" | "inativo" | "pendente"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -212,6 +268,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      afiliado_status: ["ativo", "inativo", "pendente"],
+    },
   },
 } as const

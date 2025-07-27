@@ -9,9 +9,11 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { FileUpload } from './FileUpload';
 import { PreviewCadastro } from './PreviewCadastro';
+import { IdentificacaoAfiliado } from './IdentificacaoAfiliado';
 import { 
   User, 
   Phone, 
@@ -24,7 +26,9 @@ import {
   CheckCircle,
   Upload,
   PartyPopper,
-  Trophy
+  Trophy,
+  LogOut,
+  UserCheck
 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -48,6 +52,7 @@ export const FormularioAfiliado = () => {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedData, setSubmittedData] = useState<any>(null);
+  const [afiliadoAtual, setAfiliadoAtual] = useState<any>(null);
   const [uploadedFiles, setUploadedFiles] = useState({
     videosDepoimento: [] as string[],
     imagensProduto: [] as string[],
@@ -78,10 +83,11 @@ export const FormularioAfiliado = () => {
     setIsSubmitting(true);
     
     try {
-      // Inserir dados no Supabase
+      // Inserir dados no Supabase incluindo afiliado_id
       const { data: insertedData, error } = await supabase
         .from('cadastros_afiliados')
         .insert({
+          afiliado_id: afiliadoAtual.id,
           nome_agente: data.nomeAgente,
           whatsapp: data.whatsapp,
           nome_produto: data.nomeProduto,
@@ -127,6 +133,11 @@ export const FormularioAfiliado = () => {
     }
   };
 
+  // Se não há afiliado identificado, mostrar tela de identificação
+  if (!afiliadoAtual) {
+    return <IdentificacaoAfiliado onAfiliadoIdentificado={setAfiliadoAtual} />;
+  }
+
   if (submitSuccess && submittedData) {
     return <PreviewCadastro data={submittedData} onVoltar={() => setSubmitSuccess(false)} />;
   }
@@ -134,6 +145,39 @@ export const FormularioAfiliado = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-muted/20 to-primary/5 py-8 px-4">
       <div className="max-w-4xl mx-auto">
+        {/* Header com informações do afiliado */}
+        <Card className="mb-6 border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary rounded-full">
+                  <UserCheck className="w-5 h-5 text-primary-foreground" />
+                </div>
+                <div>
+                  <p className="font-semibold text-primary">
+                    {afiliadoAtual.nome_completo}
+                  </p>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span>Código: {afiliadoAtual.codigo_afiliado}</span>
+                    <Badge variant="secondary">
+                      {afiliadoAtual.total_cadastros} produto(s) cadastrado(s)
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setAfiliadoAtual(null)}
+                className="hover:bg-destructive/10 hover:border-destructive hover:text-destructive"
+              >
+                <LogOut className="w-4 h-4 mr-2" />
+                Sair
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
         <Card className="shadow-xl border-0 bg-card/95 backdrop-blur-sm animate-fade-in-up">
           <CardHeader className="text-center space-y-4 pb-8">
             <div className="flex justify-center">
