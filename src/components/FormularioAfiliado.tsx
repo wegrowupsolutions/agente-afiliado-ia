@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -28,7 +28,8 @@ import {
   PartyPopper,
   Trophy,
   LogOut,
-  UserCheck
+  UserCheck,
+  Edit
 } from 'lucide-react';
 
 const formSchema = z.object({
@@ -53,6 +54,8 @@ export const FormularioAfiliado = () => {
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [submittedData, setSubmittedData] = useState<any>(null);
   const [afiliadoAtual, setAfiliadoAtual] = useState<any>(null);
+  const [cadastroExistente, setCadastroExistente] = useState<any>(null);
+  const [isEditMode, setIsEditMode] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState({
     videosDepoimento: [] as string[],
     imagensProduto: [] as string[],
@@ -79,52 +82,162 @@ export const FormularioAfiliado = () => {
     },
   });
 
+  // Verificar se há cadastro existente quando o afiliado for identificado
+  useEffect(() => {
+    const verificarCadastroExistente = async () => {
+      if (!afiliadoAtual) return;
+      
+      try {
+        const { data, error } = await supabase
+          .from('cadastros_afiliados')
+          .select('*')
+          .eq('afiliado_id', afiliadoAtual.id)
+          .limit(1);
+
+        if (error) throw error;
+
+        if (data && data.length > 0) {
+          const cadastro = data[0];
+          setCadastroExistente(cadastro);
+          setIsEditMode(true);
+          
+          // Preencher o formulário com os dados existentes
+          form.reset({
+            nomeAgente: cadastro.nome_agente || '',
+            whatsapp: cadastro.whatsapp || '',
+            nomeProduto: cadastro.nome_produto || '',
+            linkPaginaVendas: cadastro.link_pagina_vendas || '',
+            descricaoProduto: cadastro.descricao_produto || '',
+            checkout01: cadastro.checkout_01 || '',
+            checkout02: cadastro.checkout_02 || '',
+            checkout03: cadastro.checkout_03 || '',
+            checkout04: cadastro.checkout_04 || '',
+            checkout05: cadastro.checkout_05 || '',
+            linkInstagram: cadastro.link_instagram || '',
+          });
+
+          // Preencher arquivos existentes
+          setUploadedFiles({
+            videosDepoimento: cadastro.videos_depoimento || [],
+            imagensProduto: cadastro.imagens_produto || [],
+            imagensProvaSocial: cadastro.imagens_prova_social || [],
+            documentosComplementares: cadastro.documentos_complementares || []
+          });
+        }
+      } catch (error) {
+        console.error('Erro ao verificar cadastro existente:', error);
+      }
+    };
+
+    verificarCadastroExistente();
+  }, [afiliadoAtual, form]);
+
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     
     try {
-      // Inserir dados no Supabase incluindo afiliado_id
-      const { data: insertedData, error } = await supabase
-        .from('cadastros_afiliados')
-        .insert({
-          afiliado_id: afiliadoAtual.id,
-          nome_agente: data.nomeAgente,
-          whatsapp: data.whatsapp,
-          nome_produto: data.nomeProduto,
-          link_pagina_vendas: data.linkPaginaVendas,
-          descricao_produto: data.descricaoProduto,
-          checkout_01: data.checkout01,
-          checkout_02: data.checkout02 || null,
-          checkout_03: data.checkout03 || null,
-          checkout_04: data.checkout04 || null,
-          checkout_05: data.checkout05 || null,
-          link_instagram: data.linkInstagram || null,
-          videos_depoimento: uploadedFiles.videosDepoimento,
-          imagens_produto: uploadedFiles.imagensProduto,
-          imagens_prova_social: uploadedFiles.imagensProvaSocial,
-          documentos_complementares: uploadedFiles.documentosComplementares,
-        })
-        .select()
-        .single();
+      if (isEditMode && cadastroExistente) {
+        // Modo de edição: detectar campos alterados e fazer update
+        const camposAlterados: any = {};
+        
+        // Verificar mudanças nos campos do formulário
+        if (data.nomeAgente !== cadastroExistente.nome_agente) camposAlterados.nome_agente = data.nomeAgente;
+        if (data.whatsapp !== cadastroExistente.whatsapp) camposAlterados.whatsapp = data.whatsapp;
+        if (data.nomeProduto !== cadastroExistente.nome_produto) camposAlterados.nome_produto = data.nomeProduto;
+        if (data.linkPaginaVendas !== cadastroExistente.link_pagina_vendas) camposAlterados.link_pagina_vendas = data.linkPaginaVendas;
+        if (data.descricaoProduto !== cadastroExistente.descricao_produto) camposAlterados.descricao_produto = data.descricaoProduto;
+        if (data.checkout01 !== cadastroExistente.checkout_01) camposAlterados.checkout_01 = data.checkout01;
+        if (data.checkout02 !== cadastroExistente.checkout_02) camposAlterados.checkout_02 = data.checkout02 || null;
+        if (data.checkout03 !== cadastroExistente.checkout_03) camposAlterados.checkout_03 = data.checkout03 || null;
+        if (data.checkout04 !== cadastroExistente.checkout_04) camposAlterados.checkout_04 = data.checkout04 || null;
+        if (data.checkout05 !== cadastroExistente.checkout_05) camposAlterados.checkout_05 = data.checkout05 || null;
+        if (data.linkInstagram !== cadastroExistente.link_instagram) camposAlterados.link_instagram = data.linkInstagram || null;
+        
+        // Verificar mudanças nos arquivos
+        const videosAtuais = JSON.stringify(uploadedFiles.videosDepoimento.sort());
+        const videosExistentes = JSON.stringify((cadastroExistente.videos_depoimento || []).sort());
+        if (videosAtuais !== videosExistentes) camposAlterados.videos_depoimento = uploadedFiles.videosDepoimento;
+        
+        const imagensProdutoAtuais = JSON.stringify(uploadedFiles.imagensProduto.sort());
+        const imagensProdutoExistentes = JSON.stringify((cadastroExistente.imagens_produto || []).sort());
+        if (imagensProdutoAtuais !== imagensProdutoExistentes) camposAlterados.imagens_produto = uploadedFiles.imagensProduto;
+        
+        const imagensProvaSocialAtuais = JSON.stringify(uploadedFiles.imagensProvaSocial.sort());
+        const imagensProvaSocialExistentes = JSON.stringify((cadastroExistente.imagens_prova_social || []).sort());
+        if (imagensProvaSocialAtuais !== imagensProvaSocialExistentes) camposAlterados.imagens_prova_social = uploadedFiles.imagensProvaSocial;
+        
+        const documentosAtuais = JSON.stringify(uploadedFiles.documentosComplementares.sort());
+        const documentosExistentes = JSON.stringify((cadastroExistente.documentos_complementares || []).sort());
+        if (documentosAtuais !== documentosExistentes) camposAlterados.documentos_complementares = uploadedFiles.documentosComplementares;
 
-      if (error) {
-        throw error;
+        // Se há campos alterados, fazer update
+        if (Object.keys(camposAlterados).length > 0) {
+          camposAlterados.updated_at = new Date().toISOString();
+          
+          const { data: updatedData, error } = await supabase
+            .from('cadastros_afiliados')
+            .update(camposAlterados)
+            .eq('id', cadastroExistente.id)
+            .select()
+            .single();
+
+          if (error) throw error;
+
+          toast({
+            title: "✅ Dados atualizados com sucesso!",
+            description: `${Object.keys(camposAlterados).length} campo(s) foram atualizados.`,
+          });
+
+          setSubmittedData({ ...data, ...uploadedFiles, id: updatedData.id });
+        } else {
+          toast({
+            title: "ℹ️ Nenhuma alteração detectada",
+            description: "Os dados permanecem iguais ao cadastro existente.",
+          });
+          return;
+        }
+      } else {
+        // Modo de inserção: cadastro novo
+        const { data: insertedData, error } = await supabase
+          .from('cadastros_afiliados')
+          .insert({
+            afiliado_id: afiliadoAtual.id,
+            nome_agente: data.nomeAgente,
+            whatsapp: data.whatsapp,
+            nome_produto: data.nomeProduto,
+            link_pagina_vendas: data.linkPaginaVendas,
+            descricao_produto: data.descricaoProduto,
+            checkout_01: data.checkout01,
+            checkout_02: data.checkout02 || null,
+            checkout_03: data.checkout03 || null,
+            checkout_04: data.checkout04 || null,
+            checkout_05: data.checkout05 || null,
+            link_instagram: data.linkInstagram || null,
+            videos_depoimento: uploadedFiles.videosDepoimento,
+            imagens_produto: uploadedFiles.imagensProduto,
+            imagens_prova_social: uploadedFiles.imagensProvaSocial,
+            documentos_complementares: uploadedFiles.documentosComplementares,
+          })
+          .select()
+          .single();
+
+        if (error) throw error;
+
+        toast({
+          title: "✅ Cadastro realizado com sucesso!",
+          description: "Seu agente afiliado foi cadastrado na nossa plataforma.",
+        });
+
+        setSubmittedData({ ...data, ...uploadedFiles, id: insertedData.id });
       }
-
-      setSubmittedData({ ...data, ...uploadedFiles, id: insertedData.id });
       
-      // Mostrar pop-up de sucesso primeiro
+      // Mostrar pop-up de sucesso
       setShowSuccessModal(true);
-      
-      toast({
-        title: "✅ Cadastro realizado com sucesso!",
-        description: "Seu agente afiliado foi cadastrado na nossa plataforma.",
-      });
 
     } catch (error) {
-      console.error('Erro ao cadastrar:', error);
+      console.error('Erro ao salvar:', error);
       toast({
-        title: "❌ Erro no cadastro",
+        title: "❌ Erro ao salvar",
         description: "Ocorreu um erro ao salvar seus dados. Tente novamente.",
         variant: "destructive",
       });
@@ -186,10 +299,20 @@ export const FormularioAfiliado = () => {
               </div>
             </div>
             <CardTitle className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Cadastro de Agente Afiliado IA
+              {isEditMode ? (
+                <>
+                  <Edit className="w-8 h-8 inline mr-3 text-primary" />
+                  Editar Cadastro de Afiliado
+                </>
+              ) : (
+                'Cadastro de Agente Afiliado IA'
+              )}
             </CardTitle>
             <p className="text-muted-foreground text-lg">
-              Preencha os dados abaixo para criar seu perfil de afiliado inteligente
+              {isEditMode 
+                ? 'Altere os dados desejados e clique em salvar. Apenas os campos modificados serão atualizados.'
+                : 'Preencha os dados abaixo para criar seu perfil de afiliado inteligente'
+              }
             </p>
           </CardHeader>
           
@@ -431,8 +554,17 @@ export const FormularioAfiliado = () => {
                       </>
                     ) : (
                       <>
-                        <CheckCircle className="w-5 h-5 mr-2" />
-                        Finalizar Cadastro
+                        {isEditMode ? (
+                          <>
+                            <Edit className="w-5 h-5 mr-2" />
+                            Salvar Alterações
+                          </>
+                        ) : (
+                          <>
+                            <CheckCircle className="w-5 h-5 mr-2" />
+                            Finalizar Cadastro
+                          </>
+                        )}
                       </>
                     )}
                   </Button>
