@@ -32,7 +32,7 @@ interface IdentificacaoAfiliadoProps {
 export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ onAfiliadoIdentificado }) => {
   const [modo, setModo] = useState<'novo' | 'existente'>('novo');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [mostrarCodigo, setMostrarCodigo] = useState(false);
+  const [mostrarSenha, setMostrarSenha] = useState(false);
   const { toast } = useToast();
 
   const formNovoAfiliado = useForm<IdentificacaoData>({
@@ -41,13 +41,15 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
       email: '',
       nomeCompleto: '',
       telefone: '',
+      senha: '',
     },
   });
 
   const formLoginAfiliado = useForm<LoginData>({
     resolver: zodResolver(loginSchema),
     defaultValues: {
-      codigoAfiliado: '',
+      email: '',
+      senha: '',
     },
   });
 
@@ -58,18 +60,18 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
       // Verificar se email já existe
       const { data: existeAfiliado } = await supabase
         .from('afiliados_perfis')
-        .select('id, codigo_afiliado')
+        .select('id, email')
         .eq('email', data.email)
         .single();
 
       if (existeAfiliado) {
         toast({
           title: "🔍 Afiliado já existe!",
-          description: `Use o código ${existeAfiliado.codigo_afiliado} para fazer login.`,
+          description: `Este email já está cadastrado. Use o login.`,
           variant: "destructive",
         });
         setModo('existente');
-        formLoginAfiliado.setValue('codigoAfiliado', existeAfiliado.codigo_afiliado);
+        formLoginAfiliado.setValue('email', data.email);
         return;
       }
 
@@ -88,6 +90,7 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
           email: data.email,
           nome_completo: data.nomeCompleto,
           telefone: data.telefone,
+          senha: data.senha,
           codigo_afiliado: codigoData,
         })
         .select()
@@ -99,7 +102,7 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
 
       toast({
         title: "✅ Afiliado criado com sucesso!",
-        description: `Seu código é: ${novoAfiliado.codigo_afiliado}. Guarde-o para futuros acessos!`,
+        description: `Perfil criado! Use seu email e senha para futuros acessos.`,
       });
 
       onAfiliadoIdentificado(novoAfiliado);
@@ -123,13 +126,14 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
       const { data: afiliado, error } = await supabase
         .from('afiliados_perfis')
         .select('*')
-        .eq('codigo_afiliado', data.codigoAfiliado.toUpperCase())
+        .eq('email', data.email)
+        .eq('senha', data.senha)
         .single();
 
       if (error || !afiliado) {
         toast({
-          title: "❌ Código não encontrado",
-          description: "Verifique se o código está correto ou crie um novo perfil.",
+          title: "❌ Login inválido",
+          description: "Email ou senha incorretos. Verifique suas credenciais.",
           variant: "destructive",
         });
         return;
@@ -176,7 +180,7 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
             <p className="text-muted-foreground">
               {modo === 'novo' 
                 ? 'Crie seu perfil de afiliado para começar' 
-                : 'Entre com seu código de afiliado'
+                : 'Entre com seu email e senha'
               }
             </p>
           </CardHeader>
@@ -247,7 +251,39 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
                       </FormItem>
                     )}
                   />
-
+                   
+                  <FormField
+                    control={formNovoAfiliado.control}
+                    name="senha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Senha</FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Input 
+                              type={mostrarSenha ? "text" : "password"}
+                              placeholder="Digite sua senha (mín. 6 caracteres)"
+                              {...field}
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute right-0 top-0 h-full px-3"
+                              onClick={() => setMostrarSenha(!mostrarSenha)}
+                            >
+                              {mostrarSenha ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
                   <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-primary to-primary-glow"
@@ -275,28 +311,39 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
                 <form onSubmit={formLoginAfiliado.handleSubmit(fazerLoginAfiliado)} className="space-y-4">
                   <FormField
                     control={formLoginAfiliado.control}
-                    name="codigoAfiliado"
+                    name="email"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Código do Afiliado</FormLabel>
+                        <FormLabel>Email</FormLabel>
+                        <FormControl>
+                          <Input type="email" placeholder="seu@email.com" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <FormField
+                    control={formLoginAfiliado.control}
+                    name="senha"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Senha</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input 
-                              type={mostrarCodigo ? "text" : "password"}
-                              placeholder="Digite seu código de 8 dígitos"
-                              maxLength={8}
-                              style={{ textTransform: 'uppercase' }}
+                              type={mostrarSenha ? "text" : "password"}
+                              placeholder="Digite sua senha"
                               {...field}
-                              onChange={(e) => field.onChange(e.target.value.toUpperCase())}
                             />
                             <Button
                               type="button"
                               variant="ghost"
                               size="sm"
                               className="absolute right-0 top-0 h-full px-3"
-                              onClick={() => setMostrarCodigo(!mostrarCodigo)}
+                              onClick={() => setMostrarSenha(!mostrarSenha)}
                             >
-                              {mostrarCodigo ? (
+                              {mostrarSenha ? (
                                 <EyeOff className="h-4 w-4" />
                               ) : (
                                 <Eye className="h-4 w-4" />
@@ -305,9 +352,6 @@ export const IdentificacaoAfiliado: React.FC<IdentificacaoAfiliadoProps> = ({ on
                           </div>
                         </FormControl>
                         <FormMessage />
-                        <p className="text-xs text-muted-foreground">
-                          Código de 8 caracteres recebido ao criar seu perfil
-                        </p>
                       </FormItem>
                     )}
                   />

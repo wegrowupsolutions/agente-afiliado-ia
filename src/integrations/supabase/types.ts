@@ -22,6 +22,7 @@ export type Database = {
           email: string
           id: string
           nome_completo: string
+          senha: string
           status: Database["public"]["Enums"]["afiliado_status"]
           telefone: string | null
           total_cadastros: number | null
@@ -35,6 +36,7 @@ export type Database = {
           email: string
           id?: string
           nome_completo: string
+          senha?: string
           status?: Database["public"]["Enums"]["afiliado_status"]
           telefone?: string | null
           total_cadastros?: number | null
@@ -48,6 +50,7 @@ export type Database = {
           email?: string
           id?: string
           nome_completo?: string
+          senha?: string
           status?: Database["public"]["Enums"]["afiliado_status"]
           telefone?: string | null
           total_cadastros?: number | null
