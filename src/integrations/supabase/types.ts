@@ -14,7 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      cadastros_afiliados: {
+        Row: {
+          checkout_01: string
+          checkout_02: string | null
+          checkout_03: string | null
+          checkout_04: string | null
+          checkout_05: string | null
+          created_at: string
+          descricao_produto: string
+          documentos_complementares: string[] | null
+          id: string
+          imagens_produto: string[] | null
+          imagens_prova_social: string[] | null
+          link_instagram: string | null
+          link_pagina_vendas: string
+          nome_agente: string
+          nome_produto: string
+          updated_at: string
+          videos_depoimento: string[] | null
+          whatsapp: string
+        }
+        Insert: {
+          checkout_01: string
+          checkout_02?: string | null
+          checkout_03?: string | null
+          checkout_04?: string | null
+          checkout_05?: string | null
+          created_at?: string
+          descricao_produto: string
+          documentos_complementares?: string[] | null
+          id?: string
+          imagens_produto?: string[] | null
+          imagens_prova_social?: string[] | null
+          link_instagram?: string | null
+          link_pagina_vendas: string
+          nome_agente: string
+          nome_produto: string
+          updated_at?: string
+          videos_depoimento?: string[] | null
+          whatsapp: string
+        }
+        Update: {
+          checkout_01?: string
+          checkout_02?: string | null
+          checkout_03?: string | null
+          checkout_04?: string | null
+          checkout_05?: string | null
+          created_at?: string
+          descricao_produto?: string
+          documentos_complementares?: string[] | null
+          id?: string
+          imagens_produto?: string[] | null
+          imagens_prova_social?: string[] | null
+          link_instagram?: string | null
+          link_pagina_vendas?: string
+          nome_agente?: string
+          nome_produto?: string
+          updated_at?: string
+          videos_depoimento?: string[] | null
+          whatsapp?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
