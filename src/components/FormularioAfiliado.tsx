@@ -419,7 +419,7 @@ export const FormularioAfiliado = () => {
                 Cadastro realizado com sucesso!
               </p>
               <p className="text-muted-foreground">
-                Todos os seus dados e arquivos foram salvos com segurança no Supabase. 
+                Todos os seus dados e arquivos foram salvos com segurança na memoria. 
                 Seu agente afiliado está agora cadastrado na nossa plataforma!
               </p>
               <div className="pt-4 space-y-3">
